@@ -1,0 +1,4 @@
+type-api.db
+data/Pokemon.csv
+db/pokemon-type-api.db
+__pycache__
