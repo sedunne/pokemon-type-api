@@ -1,0 +1,6 @@
+.github
+Dockerfile
+Readme.md
+db/pokemon-type-api.db
+.git
+.gitignore
