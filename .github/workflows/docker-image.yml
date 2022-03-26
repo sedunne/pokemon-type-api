@@ -1,0 +1,30 @@
+name: Docker Image CI
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Setup QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v2   
+        with:
+          push: true
+          tags: sedunne/pokemon-type-api:latest,sedunne/pokemon-type-api:${{ github.ref_name }}
+          platforms: linux/amd64,linux/arm64/v8
