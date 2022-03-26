@@ -5,10 +5,10 @@ LABEL org.opencontainers.image.authors="Stephen Dunne"
 LABEL org.opencontainers.image.url="https://hub.docker.com/repository/docker/sedunne/pokemon-type-api"
 LABEL org.opencontainers.image.source="https://github.com/sedunne/pokemon-type-api"
 LABEL org.opencontainers.image.title="pokemon-type-api"
-LABEL org.opencontainers.image.version="0.1.3"
+LABEL org.opencontainers.image.version="0.1.4"
 
 ## ran into issues with buildkit cache mount in github actions, so just do it the old way for now
-RUN apt-get update && apt-get --no-install-recommends install -y sqlite3
+RUN apt-get update && apt-get --no-install-recommends install -y curl sqlite3
 
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
