@@ -1,5 +1,6 @@
 import sqlite3
 
+
 def db_connect():
     """This function returns a connection object for the sqlite db."""
     try:
@@ -70,8 +71,30 @@ def get_type_weaknesses(type: str, gen: int = 8):
 
     return weaknesses
 
+
 def get_type_effectiveness(attacking: str, defending: str, generation: int = 8):
     """This function gets the effectiveness of an attacking move type against a defending pokemon type."""
     type_row = get_type_row_by_gen(type=attacking, gen=generation)
     return {"attacking" : attacking, "defending" : defending, "effectiveness": type_row[defending], "generation": generation}
+
+
+def is_valid_type(type: str, generation: int = 8):
+    """This function takes a given type and validates that it exists in a given generation."""
+    gentable = map_gen_to_table(generation)
+    gen_types = []
+    try:
+        db = db_connect()
+        cur = db.cursor()
+        cur.execute("SELECT Type FROM %s" % gentable)
+        gen_types = cur.fetchall()
+    except:
+        raise
+    finally:
+        db.close()
+
+    for i in range(len(gen_types)):
+        if type == gen_types[i][0]:
+            return True
+
+    return False
 
