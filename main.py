@@ -49,10 +49,34 @@ def get_type_row_by_gen(type: str, gen: int = 8):
         db.close()
 
 
+## maybe there's a better way to do a "column select" than this
+def get_type_weaknesses(type: str, gen: int = 8):
+    """This function returns a dict of defending damage modifiers (weaknesses) based on a given type."""
+    gentable = map_gen_to_table(gen)
+    types = []
+    modifiers = []
+    try:
+        db = db_connect()
+        cur = db.cursor()
+        cur.execute("SELECT %s FROM %s" % (type, gentable))
+        modifiers = cur.fetchall()
+        cur.execute("SELECT Type FROM %s" % gentable)
+        types = cur.fetchall()
+    except:
+        raise
+    finally:
+        db.close()
+
+    weaknesses = {"type": type, "weaknesses": {}, "generation": gen}
+    for i in range(len(types)):
+        weaknesses['weaknesses'][types[i][0]] = modifiers[i][0]
+
+    return weaknesses
+
 def get_type_effectiveness(attacking: str, defending: str, generation: int = 8):
     """This function gets the effectiveness of an attacking move type against a defending pokemon type."""
     type_row = get_type_row_by_gen(type=attacking, gen=generation)
-    return {"attacking" : attacking, "defending" : defending, "effectiveness": type_row[defending]}
+    return {"attacking" : attacking, "defending" : defending, "effectiveness": type_row[defending], "generation": generation}
 
 
 app = FastAPI()
@@ -64,14 +88,21 @@ async def get_root():
     return {"message": "gotta catch 'em all"}
 
 
-## fastapi doesn't seem to recognize 3.10 optional typing, so use the older style instead
-@app.get("/type/{type_name}")
-async def get_type_path(type_name: str, defending: Optional[str] = None, generation: int = 8):
-    """This path returns the effectiveness of moves with type {type_name} against other types in a given generation.
-    If optional parameter 'defending' is set, only move effectiveness against that type will be returned.
-    """
-    if defending:
-        return get_type_effectiveness(type_name.capitalize(), defending.capitalize(), generation)
-    else:
-        return build_type_dict_from_row(get_type_row_by_gen(type_name.capitalize(), generation))
+@app.get("/{type_name}")
+async def get_type_chart(type_name: str, generation: int = 8):
+    """This path returns the effectiveness of moves with type {type_name} against other types in a given generation. In other words, a JSON move-type chart."""
+    typechart = build_type_dict_from_row(get_type_row_by_gen(type_name.capitalize(), generation))
+    typechart["generation"] = generation
+    return typechart
 
+
+@app.get("/{type_name}/weakness")
+async def get_weakness_chart(type_name: str, generation: int = 8):
+    """This path returns the weaknesses of pokemon with type {type_name}."""
+    return get_type_weaknesses(type=type_name.capitalize(), gen=generation)
+
+
+@app.get("/{attacking}/{defending}")
+async def get_type_path(attacking: str, defending: str, generation: int = 8):
+    """This path returns the effectiveness of a move of type {attacking} against a defending Pokemon of type {defending}."""
+    return get_type_effectiveness(attacking.capitalize(), defending.capitalize(), generation)
