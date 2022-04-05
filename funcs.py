@@ -98,3 +98,16 @@ def is_valid_type(type: str, generation: int = 8):
 
     return False
 
+def get_pokemon_types(name: str):
+    """This function returns all the damage modifiers for a given type, based on generation."""
+    try:
+        db = db_connect()
+        db.row_factory = sqlite3.Row
+        cur = db.cursor()
+        cur.execute("SELECT Type1 FROM Pokemon WHERE Name = ?", [name])
+        ## TODO: the CSV/db has some multiple entries for pokemon (e.g. Pikachu), so probably should find a better way to deal with that.
+        return cur.fetchone()
+    except:
+        return False
+    finally:
+        db.close()

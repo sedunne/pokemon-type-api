@@ -14,6 +14,17 @@ async def get_root():
     return {"message": "gotta catch 'em all"}
 
 
+@app.get("/pokemon/{pokemon_name}")
+async def get_weakness_by_pokemon(pokemon_name: str):
+    """This path returns the move-type effectiveness for attacks against the given Pokemon."""
+    lookup_types = get_pokemon_types(pokemon_name.capitalize())
+    if type:
+        types = get_type_weaknesses(type=lookup_types[0].capitalize())
+        return {pokemon_name.capitalize() : types}
+    else:
+        return {"message" : "could not find type for %s" % pokemon_name}
+
+
 @app.get("/{type_name}")
 async def get_type_chart(type_name: str, generation: int = APP_DEFAULT_GEN):
     """This path returns the effectiveness of moves with type {type_name} against other types in a given generation. In other words, a JSON move-type chart."""
